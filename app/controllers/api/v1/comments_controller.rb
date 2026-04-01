@@ -1,5 +1,5 @@
 class Api::V1::CommentsController < ApplicationController
-  skip_before_action :require_current_user, only: [:index]
+  skip_before_action :require_current_user, only: [ :index ]
   def index
     render json: { data: post.comments.includes(:user).order(:created_at).map { |comment| serialize_comment(comment) } }
   end

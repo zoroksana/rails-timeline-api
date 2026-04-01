@@ -16,11 +16,11 @@ RSpec.describe Post, type: :model do
     let!(:newer_post) { create(:post, date: 1.day.ago, created_at: 1.day.ago) }
 
     it 'sorts by date descending by default' do
-      expect(described_class.timeline_order(nil, nil)).to eq([newer_post, older_post])
+      expect(described_class.timeline_order(nil, nil)).to eq([ newer_post, older_post ])
     end
 
     it 'sorts by created_at ascending when requested' do
-      expect(described_class.timeline_order('created_at', 'asc')).to eq([older_post, newer_post])
+      expect(described_class.timeline_order('created_at', 'asc')).to eq([ older_post, newer_post ])
     end
   end
 end

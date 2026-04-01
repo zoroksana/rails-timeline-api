@@ -11,7 +11,7 @@ Rails.application.routes.draw do
   namespace :api do
     namespace :v1 do
       resources :posts do
-        resources :comments, only: [:create, :index]
+        resources :comments, only: [ :create, :index ]
         member do
           post :like
           delete :like, action: :unlike

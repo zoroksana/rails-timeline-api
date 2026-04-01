@@ -15,7 +15,7 @@ class TimelineController < ActionController::Base
   end
 
   def show
-    @post = Post.includes(:user, :post_attachments, comments: [:user, :likes]).find(params[:id])
+    @post = Post.includes(:user, :post_attachments, comments: [ :user, :likes ]).find(params[:id])
     @comment = Comment.new
     @banner = params[:banner]
   end
@@ -54,7 +54,7 @@ class TimelineController < ActionController::Base
     if comment.save
       redirect_to timeline_post_path(post, user_id: user.id, banner: "Comment added.")
     else
-      @post = Post.includes(:user, :post_attachments, comments: [:user, :likes]).find(params[:id])
+      @post = Post.includes(:user, :post_attachments, comments: [ :user, :likes ]).find(params[:id])
       @comment = comment
       @banner = comment.errors.full_messages.to_sentence
       render :show, status: :unprocessable_entity

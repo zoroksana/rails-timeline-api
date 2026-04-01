@@ -1,6 +1,6 @@
 class Api::V1::PostsController < ApplicationController
-  skip_before_action :require_current_user, only: [:index, :show]
-  before_action :authorize_post_owner!, only: [:update, :destroy]
+  skip_before_action :require_current_user, only: [ :index, :show ]
+  before_action :authorize_post_owner!, only: [ :update, :destroy ]
 
   def index
     posts = Post.includes(:user, :post_attachments).timeline_order(params[:sort], params[:direction])
@@ -54,14 +54,14 @@ class Api::V1::PostsController < ApplicationController
 
   def per_page
     value = params.fetch(:per_page, 10).to_i
-    value.positive? ? [value, 50].min : 10
+    value.positive? ? [ value, 50 ].min : 10
   end
 
   def post_params
     params.require(:post).permit(
       :date,
       :description,
-      post_attachments_attributes: [:id, :file_type, :url, :_destroy]
+      post_attachments_attributes: [ :id, :file_type, :url, :_destroy ]
     )
   end
 
