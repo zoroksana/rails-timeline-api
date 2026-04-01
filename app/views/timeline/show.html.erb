@@ -1,0 +1,92 @@
+<section class="hero">
+  <p class="hero-kicker">Post Details</p>
+  <h1>Post #<%= @post.id %></h1>
+  <p>
+    Authored by <strong><%= @post.user.name %></strong> on <%= @post.date.strftime("%d %b %Y %H:%M") %>.
+    You can also inspect the raw JSON at <a href="/api/v1/posts/<%= @post.id %>">/api/v1/posts/<%= @post.id %></a>.
+  </p>
+  <div class="hero-links">
+    <a class="chip" href="<%= root_path %>">Back to timeline</a>
+    <a class="chip" href="<%= timeline_path(user_id: selected_user&.id) %>">Timeline</a>
+    <a class="chip" href="/api/v1/posts/<%= @post.id %>">Raw API</a>
+  </div>
+
+  <% if available_users.any? %>
+    <%= form_with url: timeline_select_user_path, class: "toolbar" do |form| %>
+      <%= form.hidden_field :redirect_to, value: timeline_post_path(@post) %>
+      <div class="field" style="min-width: 260px;">
+        <%= form.label :user_id, "Current user" %>
+        <%= form.select :user_id, available_users.map { |user| ["#{user.name} (##{user.id})", user.id] }, selected: selected_user&.id %>
+      </div>
+      <%= form.submit "Use this user", class: "button" %>
+    <% end %>
+  <% end %>
+</section>
+
+<article class="card" style="margin-top: 24px;">
+  <div class="meta-row">
+    <div class="meta">Updated <%= @post.updated_at.strftime("%d %b %Y %H:%M") %></div>
+    <div class="stats">
+      <span class="stat"><%= @post.likes.count %> likes</span>
+      <span class="stat"><%= @post.comments.count %> comments</span>
+    </div>
+  </div>
+
+  <% if selected_user %>
+    <div style="margin-top: 18px;">
+      <%= button_to(
+        liked_by_selected_user?(@post) ? "Unlike" : "Like",
+        timeline_post_like_path(@post, user_id: selected_user.id),
+        method: :post,
+        class: "button"
+      ) %>
+    </div>
+  <% end %>
+
+  <h2 class="title">Description</h2>
+  <p class="body"><%= @post.description %></p>
+
+  <p class="section-label">Attachments</p>
+  <section class="attachments">
+    <% if @post.post_attachments.any? %>
+      <% @post.post_attachments.each do |attachment| %>
+        <div class="attachment">
+          <strong><%= attachment.file_type.capitalize %></strong>
+          <div class="meta"><a href="<%= attachment.url %>"><%= attachment.url %></a></div>
+        </div>
+      <% end %>
+    <% else %>
+      <div class="attachment meta">No attachments</div>
+    <% end %>
+  </section>
+
+  <p class="section-label">Comments</p>
+  <section class="card" style="margin-bottom: 20px; padding: 18px;">
+    <div class="meta">Add from browser</div>
+    <h3 class="title" style="font-size: 1.2rem;">New comment</h3>
+    <%= form_with model: @comment, url: timeline_post_comments_path(@post), class: "form-stack" do |form| %>
+      <div class="field">
+        <%= form.label :body %>
+        <%= form.text_area :body, placeholder: "Write a comment..." %>
+      </div>
+
+      <%= form.submit "Add comment", class: "button" %>
+    <% end %>
+  </section>
+
+  <section class="comments">
+    <% if @post.comments.any? %>
+      <% @post.comments.order(:created_at).each do |comment| %>
+        <div class="comment">
+          <div class="meta-row">
+            <strong><%= comment.user.name %></strong>
+            <span class="meta"><%= comment.likes.count %> likes</span>
+          </div>
+          <p class="body" style="margin-top: 10px;"><%= comment.body %></p>
+        </div>
+      <% end %>
+    <% else %>
+      <div class="comment meta">No comments yet</div>
+    <% end %>
+  </section>
+</article>

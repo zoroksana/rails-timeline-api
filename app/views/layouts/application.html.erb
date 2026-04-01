@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Timeline API</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <style>
+      :root {
+        --bg: #f4efe6;
+        --panel: rgba(255, 252, 247, 0.94);
+        --ink: #1f1d1a;
+        --muted: #6b655d;
+        --accent: #b4512d;
+        --accent-soft: #ead3c4;
+        --line: rgba(31, 29, 26, 0.08);
+        --shadow: 0 20px 60px rgba(62, 40, 23, 0.12);
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        color: var(--ink);
+        font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+        background:
+          radial-gradient(circle at top left, rgba(180, 81, 45, 0.12), transparent 28%),
+          linear-gradient(180deg, #f8f2e9 0%, var(--bg) 48%, #efe6da 100%);
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .shell {
+        width: min(1120px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 32px 0 56px;
+      }
+
+      .hero {
+        padding: 28px;
+        border: 1px solid var(--line);
+        border-radius: 28px;
+        background: linear-gradient(135deg, rgba(255, 249, 243, 0.98), rgba(244, 232, 220, 0.92));
+        box-shadow: var(--shadow);
+      }
+
+      .hero-kicker {
+        margin: 0 0 10px;
+        color: var(--accent);
+        font-size: 0.85rem;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+      }
+
+      .hero h1 {
+        margin: 0;
+        font-size: clamp(2.2rem, 6vw, 4.4rem);
+        line-height: 0.95;
+      }
+
+      .hero p {
+        max-width: 700px;
+        margin: 16px 0 0;
+        color: var(--muted);
+        font-size: 1.05rem;
+        line-height: 1.55;
+      }
+
+      .hero-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 22px;
+      }
+
+      .toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: end;
+        margin-top: 18px;
+      }
+
+      .chip {
+        padding: 10px 14px;
+        border: 1px solid rgba(180, 81, 45, 0.16);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.76);
+        color: var(--accent);
+        font-size: 0.92rem;
+      }
+
+      .grid {
+        display: grid;
+        gap: 18px;
+        margin-top: 24px;
+      }
+
+      .split {
+        display: grid;
+        grid-template-columns: minmax(280px, 360px) 1fr;
+        gap: 20px;
+        align-items: start;
+        margin-top: 24px;
+      }
+
+      .card {
+        padding: 22px;
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        background: var(--panel);
+        box-shadow: var(--shadow);
+      }
+
+      .card-top, .meta-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .meta {
+        color: var(--muted);
+        font-size: 0.92rem;
+      }
+
+      .title {
+        margin: 16px 0 12px;
+        font-size: 1.45rem;
+      }
+
+      .body {
+        margin: 0;
+        color: #342f29;
+        font-size: 1.03rem;
+        line-height: 1.65;
+      }
+
+      .stats {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 18px;
+      }
+
+      .stat {
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: var(--accent-soft);
+        color: #6f3118;
+        font-size: 0.9rem;
+      }
+
+      .attachments, .comments {
+        display: grid;
+        gap: 12px;
+        margin-top: 20px;
+      }
+
+      .attachment, .comment {
+        padding: 14px 16px;
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.7);
+      }
+
+      .section-label {
+        margin: 28px 0 12px;
+        font-size: 0.78rem;
+        color: var(--accent);
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+
+      .empty {
+        color: var(--muted);
+        text-align: center;
+        padding: 34px 18px;
+      }
+
+      .flash {
+        margin-top: 18px;
+        padding: 14px 16px;
+        border-radius: 18px;
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.88);
+      }
+
+      .flash.notice {
+        color: #24553f;
+        background: rgba(225, 243, 232, 0.92);
+      }
+
+      .flash.alert {
+        color: #7a281d;
+        background: rgba(251, 229, 224, 0.92);
+      }
+
+      .form-stack {
+        display: grid;
+        gap: 12px;
+      }
+
+      .field {
+        display: grid;
+        gap: 6px;
+      }
+
+      .field label {
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+
+      .field input,
+      .field select,
+      .field textarea {
+        width: 100%;
+        padding: 12px 14px;
+        color: var(--ink);
+        font: inherit;
+        border: 1px solid rgba(31, 29, 26, 0.12);
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.9);
+      }
+
+      .field textarea {
+        min-height: 120px;
+        resize: vertical;
+      }
+
+      .button {
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        padding: 12px 16px;
+        border: 0;
+        border-radius: 999px;
+        background: var(--accent);
+        color: #fff8f2;
+        font: inherit;
+        cursor: pointer;
+      }
+
+      @media (max-width: 640px) {
+        .shell {
+          width: min(100% - 20px, 100%);
+          padding-top: 20px;
+        }
+
+        .split {
+          grid-template-columns: 1fr;
+        }
+
+        .hero, .card {
+          border-radius: 20px;
+          padding: 18px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <% if defined?(@banner) && @banner.present? %>
+        <div class="flash <%= @banner.include?("created") || @banner.include?("added") ? "notice" : "alert" %>"><%= @banner %></div>
+      <% end %>
+      <%= yield %>
+    </main>
+  </body>
+</html>

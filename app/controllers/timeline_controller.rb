@@ -1,0 +1,154 @@
+class TimelineController < ActionController::Base
+  helper_method :available_users, :selected_user, :liked_by_selected_user?
+
+  def landing
+    @user = User.new
+    @banner = params[:banner]
+    @users = User.order(:name)
+  end
+
+  def index
+    @post = Post.new
+    @post.user_id = params[:user_id] if params[:user_id].present?
+    @banner = params[:banner]
+    @posts = Post.includes(:user, :post_attachments, :comments, :likes).timeline_order("date", "desc").limit(20)
+  end
+
+  def show
+    @post = Post.includes(:user, :post_attachments, comments: [:user, :likes]).find(params[:id])
+    @comment = Comment.new
+    @banner = params[:banner]
+  end
+
+  def create
+    user = current_selected_user!
+    post = user.posts.new(
+      date: Time.current,
+      description: timeline_post_params[:description]
+    )
+
+    attachment_file = timeline_post_params[:attachment_file]
+
+    post.attachment_file = attachment_file
+
+    if attachment_file.present?
+      stored_attachment = store_uploaded_attachment(attachment_file)
+      post.post_attachments.build(url: stored_attachment[:url], file_type: stored_attachment[:file_type])
+    end
+
+    if post.save
+      redirect_to timeline_post_path(post, user_id: user.id, banner: "Post created.")
+    else
+      @post = post
+      @banner = post.errors.full_messages.to_sentence
+      @posts = Post.includes(:user, :post_attachments, :comments, :likes).timeline_order("date", "desc").limit(20)
+      render :index, status: :unprocessable_entity
+    end
+  end
+
+  def create_comment
+    post = Post.find(params[:id])
+    user = current_selected_user!
+    comment = post.comments.new(body: comment_params[:body], user: user)
+
+    if comment.save
+      redirect_to timeline_post_path(post, user_id: user.id, banner: "Comment added.")
+    else
+      @post = Post.includes(:user, :post_attachments, comments: [:user, :likes]).find(params[:id])
+      @comment = comment
+      @banner = comment.errors.full_messages.to_sentence
+      render :show, status: :unprocessable_entity
+    end
+  end
+
+  def toggle_like
+    post = Post.find(params[:id])
+    user = User.find(params[:user_id])
+    like = post.likes.find_by(user: user)
+
+    if like
+      like.destroy!
+      redirect_to timeline_post_path(post, user_id: user.id, banner: "Post unliked.")
+    else
+      post.likes.create!(user: user)
+      redirect_to timeline_post_path(post, user_id: user.id, banner: "Post liked.")
+    end
+  end
+
+  def create_user
+    user = User.new(user_params)
+
+    if user.save
+      redirect_to timeline_path(user_id: user.id, banner: "User created.")
+    else
+      @users = User.order(:name)
+      @user = user
+      @banner = user.errors.full_messages.to_sentence
+      render :landing, status: :unprocessable_entity
+    end
+  end
+
+  def select_user
+    user = User.find(params[:user_id])
+    target = params[:redirect_to].presence || timeline_path
+
+    redirect_to "#{target}#{target.include?('?') ? '&' : '?'}user_id=#{user.id}"
+  end
+
+  private
+
+  def available_users
+    @available_users ||= User.order(:name)
+  end
+
+  def selected_user
+    return @selected_user if defined?(@selected_user)
+
+    @selected_user = User.find_by(id: params[:user_id]) || available_users.first
+  end
+
+  def liked_by_selected_user?(post)
+    return false unless selected_user
+
+    post.likes.any? { |like| like.user_id == selected_user.id }
+  end
+
+  def timeline_post_params
+    params.require(:post).permit(:description, :attachment_file)
+  end
+
+  def comment_params
+    params.require(:comment).permit(:body)
+  end
+
+  def user_params
+    params.require(:user).permit(:name, :email)
+  end
+
+  def store_uploaded_attachment(file)
+    extension = File.extname(file.original_filename.to_s).downcase
+    filename = "#{SecureRandom.hex(10)}#{extension}"
+    directory = Rails.root.join("public", "uploads")
+    FileUtils.mkdir_p(directory)
+
+    path = directory.join(filename)
+    File.binwrite(path, file.read)
+
+    {
+      url: "/uploads/#{filename}",
+      file_type: detect_attachment_type(file.content_type, extension)
+    }
+  end
+
+  def detect_attachment_type(content_type, extension)
+    return "photo" if content_type.to_s.start_with?("image/")
+    return "video" if content_type.to_s.start_with?("video/")
+    return "pdf" if content_type.to_s == "application/pdf" || extension == ".pdf"
+
+    "photo"
+  end
+
+  def current_selected_user!
+    selected_user || raise(ActiveRecord::RecordNotFound, "Please select a user first")
+  end
+end

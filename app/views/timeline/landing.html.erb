@@ -1,0 +1,55 @@
+<section class="hero">
+  <p class="hero-kicker">Timeline Setup</p>
+  <h1>Create a user before publishing anything.</h1>
+  <p>
+    This first screen is only for quick setup. Add one or more users here, then continue to the timeline page
+    to create posts, upload attachments, and add comments.
+  </p>
+  <div class="hero-links">
+    <a class="chip" href="<%= timeline_path %>">Go to timeline</a>
+    <a class="chip" href="/api/v1/posts">Raw API: posts</a>
+  </div>
+</section>
+
+<section class="split">
+  <aside class="card">
+    <div class="meta">Quick setup</div>
+    <h2 class="title">Create user</h2>
+    <%= form_with model: @user, url: timeline_users_path, class: "form-stack" do |form| %>
+      <div class="field">
+        <%= form.label :name %>
+        <%= form.text_field :name, placeholder: "Anna Example" %>
+      </div>
+
+      <div class="field">
+        <%= form.label :email %>
+        <%= form.email_field :email, placeholder: "anna@example.com" %>
+      </div>
+
+      <%= form.submit "Create user", class: "button" %>
+    <% end %>
+  </aside>
+
+  <section class="grid" style="margin-top: 0;">
+    <article class="card">
+      <div class="meta">Available users</div>
+      <h2 class="title" style="font-size: 1.2rem;">Current authors</h2>
+
+      <% if @users.any? %>
+        <section class="comments">
+          <% @users.each do |user| %>
+            <div class="comment">
+              <div class="meta-row">
+                <strong><%= user.name %></strong>
+                <span class="meta">#<%= user.id %></span>
+              </div>
+              <p class="body" style="margin-top: 10px;"><%= user.email %></p>
+            </div>
+          <% end %>
+        </section>
+      <% else %>
+        <div class="empty">No users yet. Create the first one from the form.</div>
+      <% end %>
+    </article>
+  </section>
+</section>

@@ -1,0 +1,95 @@
+<section class="hero">
+  <p class="hero-kicker">Timeline Demo</p>
+  <h1>Readable timeline for browser checks.</h1>
+  <p>
+    This view sits on top of the JSON API so you can review posts, comments, likes, and attachments
+    without switching to Postman or raw JSON on every step.
+  </p>
+  <div class="hero-links">
+    <a class="chip" href="/">Create users</a>
+    <a class="chip" href="/api/v1/posts">Raw API: posts</a>
+    <a class="chip" href="<%= timeline_path(user_id: selected_user&.id) %>">Refresh timeline</a>
+  </div>
+
+  <% if available_users.any? %>
+    <%= form_with url: timeline_select_user_path, class: "toolbar" do |form| %>
+      <%= form.hidden_field :redirect_to, value: timeline_path %>
+      <div class="field" style="min-width: 260px;">
+        <%= form.label :user_id, "Current user" %>
+        <%= form.select :user_id, available_users.map { |user| ["#{user.name} (##{user.id})", user.id] }, selected: selected_user&.id %>
+      </div>
+      <%= form.submit "Use this user", class: "button" %>
+    <% end %>
+  <% end %>
+</section>
+
+<section class="split">
+  <aside class="card">
+    <div class="meta">Create from browser</div>
+    <h2 class="title">New post</h2>
+    <%= form_with model: @post, url: timeline_path, class: "form-stack" do |form| %>
+      <div class="field">
+        <%= form.label :description %>
+        <%= form.text_area :description, placeholder: "Write something for the timeline..." %>
+      </div>
+
+      <div class="field">
+        <%= form.label :attachment_file, "Choose a file from your computer" %>
+        <%= form.file_field :attachment_file, accept: "image/*,video/*,.pdf,application/pdf" %>
+      </div>
+
+      <%= form.submit "Create post", class: "button" %>
+    <% end %>
+  </aside>
+
+  <section class="grid" style="margin-top: 0;">
+    <% if @posts.any? %>
+      <% @posts.each do |post| %>
+        <article class="card">
+          <div class="card-top">
+            <div class="meta">
+              <strong><%= post.user.name %></strong>
+              · <%= post.date.strftime("%d %b %Y %H:%M") %>
+            </div>
+            <a class="chip" href="<%= timeline_post_path(post) %>">Open post</a>
+          </div>
+
+          <h2 class="title">Post #<%= post.id %></h2>
+          <p class="body"><%= post.description %></p>
+
+          <div class="stats">
+            <span class="stat"><%= post.likes.count %> likes</span>
+            <span class="stat"><%= post.comments.count %> comments</span>
+            <span class="stat"><%= post.post_attachments.count %> attachments</span>
+          </div>
+
+          <% if selected_user %>
+            <div style="margin-top: 16px;">
+              <%= button_to(
+                liked_by_selected_user?(post) ? "Unlike" : "Like",
+                timeline_post_like_path(post, user_id: selected_user.id),
+                method: :post,
+                class: "button"
+              ) %>
+            </div>
+          <% end %>
+
+          <% if post.post_attachments.any? %>
+            <section class="attachments">
+              <% post.post_attachments.each do |attachment| %>
+                <div class="attachment">
+                  <strong><%= attachment.file_type.capitalize %></strong>
+                  <div class="meta"><a href="<%= attachment.url %>"><%= attachment.url %></a></div>
+                </div>
+              <% end %>
+            </section>
+          <% end %>
+        </article>
+      <% end %>
+    <% else %>
+      <div class="card empty">
+        No posts yet. Create one from the form on the left.
+      </div>
+    <% end %>
+  </section>
+</section>
