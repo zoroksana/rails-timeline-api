@@ -2,8 +2,7 @@
   <p class="hero-kicker">Timeline Demo</p>
   <h1>Readable timeline for browser checks.</h1>
   <p>
-    This view sits on top of the JSON API so you can review posts, comments, likes, and attachments
-    without switching to Postman or raw JSON on every step.
+    This browser view sits on top of the JSON API so posts, comments, likes, and attachments are easy to review in one place.
   </p>
   <div class="hero-links">
     <a class="chip" href="/">Create users</a>
@@ -27,6 +26,9 @@
   <aside class="card">
     <div class="meta">Create from browser</div>
     <h2 class="title">New post</h2>
+    <% if selected_user %>
+      <p class="meta">Posting as <strong><%= selected_user.name %></strong>.</p>
+    <% end %>
     <%= form_with model: @post, url: timeline_path, class: "form-stack" do |form| %>
       <div class="field">
         <%= form.label :description %>

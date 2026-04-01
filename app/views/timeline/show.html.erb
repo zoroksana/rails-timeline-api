@@ -61,9 +61,12 @@
   </section>
 
   <p class="section-label">Comments</p>
-  <section class="card" style="margin-bottom: 20px; padding: 18px;">
+  <section class="soft-panel" style="margin-bottom: 20px;">
     <div class="meta">Add from browser</div>
     <h3 class="title" style="font-size: 1.2rem;">New comment</h3>
+    <% if selected_user %>
+      <p class="meta">Commenting as <strong><%= selected_user.name %></strong>.</p>
+    <% end %>
     <%= form_with model: @comment, url: timeline_post_comments_path(@post), class: "form-stack" do |form| %>
       <div class="field">
         <%= form.label :body %>
