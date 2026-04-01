@@ -40,6 +40,7 @@ class TimelineController < ActionController::Base
       redirect_to timeline_post_path(post, user_id: user.id, banner: "Post created.")
     else
       @post = post
+      @post.user_id = user.id
       @banner = post.errors.full_messages.to_sentence
       @posts = Post.includes(:user, :post_attachments, :comments, :likes).timeline_order("date", "desc").limit(20)
       render :index, status: :unprocessable_entity
@@ -92,7 +93,7 @@ class TimelineController < ActionController::Base
     user = User.find(params[:user_id])
     target = params[:redirect_to].presence || timeline_path
 
-    redirect_to "#{target}#{target.include?('?') ? '&' : '?'}user_id=#{user.id}"
+    redirect_to append_query_param(target, "user_id", user.id)
   end
 
   private
@@ -150,5 +151,13 @@ class TimelineController < ActionController::Base
 
   def current_selected_user!
     selected_user || raise(ActiveRecord::RecordNotFound, "Please select a user first")
+  end
+
+  def append_query_param(url, key, value)
+    uri = URI.parse(url)
+    params = Rack::Utils.parse_nested_query(uri.query)
+    params[key] = value
+    uri.query = params.to_query.presence
+    uri.to_s
   end
 end

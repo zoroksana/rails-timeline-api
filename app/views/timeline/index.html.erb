@@ -53,7 +53,7 @@
               <strong><%= post.user.name %></strong>
               · <%= post.date.strftime("%d %b %Y %H:%M") %>
             </div>
-            <a class="chip" href="<%= timeline_post_path(post) %>">Open post</a>
+            <a class="chip" href="<%= timeline_post_path(post, user_id: selected_user&.id) %>">Open post</a>
           </div>
 
           <h2 class="title">Post #<%= post.id %></h2>
