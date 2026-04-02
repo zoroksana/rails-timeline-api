@@ -25,6 +25,7 @@ services:
       - bundle_cache:/usr/local/bundle
     ports:
       - "3000:3000"
+      - "9393:9393"
     depends_on:
       db:
         condition: service_healthy
@@ -33,6 +34,8 @@ services:
       RAILS_ENV: development
       BUNDLE_PATH: /usr/local/bundle
       BUNDLE_IGNORE_CONFIG: "1"
+      PUMA_METRICS: "true"
+      PUMA_METRICS_URL: tcp://0.0.0.0:9393
 
   test:
     build:
@@ -50,6 +53,7 @@ services:
       RAILS_ENV: test
       BUNDLE_PATH: /usr/local/bundle
       BUNDLE_IGNORE_CONFIG: "1"
+      PUMA_METRICS: "false"
 
 volumes:
   postgres_data:

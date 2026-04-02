@@ -33,6 +33,10 @@ port ENV.fetch("PORT", 3000)
 
 # Allow puma to be restarted by `bin/rails restart` command.
 plugin :tmp_restart
+plugin "metrics" if ENV.fetch("PUMA_METRICS", "true") == "true"
+
+# Expose Prometheus-compatible Puma metrics on a dedicated port in local/dev environments.
+metrics_url ENV.fetch("PUMA_METRICS_URL", "tcp://0.0.0.0:9393") if ENV.fetch("PUMA_METRICS", "true") == "true"
 
 # Run the Solid Queue supervisor inside of Puma for single-server deployments.
 plugin :solid_queue if ENV["SOLID_QUEUE_IN_PUMA"]
