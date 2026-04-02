@@ -33,3 +33,6 @@
 
 /public/uploads/*
 /public/uploads/*
+/.kamal/
+/app/jobs/
+/app/mailers/
