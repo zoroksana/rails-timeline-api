@@ -11,7 +11,7 @@ Ruby on Rails timeline API where users can create posts, comment on posts, and l
 - Request and model specs with RSpec
 - Local development with `docker compose`
 - Simple browser demo for creating users, posts, comments, and likes
-- Small Turbo JS enhancement for post likes in the browser demo
+- Small Turbo JS enhancement for post likes on the single-post browser page
 - Local Puma metrics endpoint
 
 ## Running locally
@@ -40,12 +40,12 @@ docker compose run --rm test bundle exec rspec
 ## Browser demo
 
 - `/` lets you create users
-- `/timeline` lets you create posts, upload an attachment from your computer, and like posts
-- `/timeline/:id` shows a single post and lets you add comments
+- `/timeline` lets you create posts, upload an attachment from your computer, browse posts, paginate the list, and sort by newest or oldest
+- `/timeline/:id` shows a single post and lets you update or delete your own post, like the post, add comments, and like comments
 
 The browser flow uses a selected user from the UI so manual testing is easy without setting request headers by hand.
 
-Post likes in the browser demo use a small Turbo JS enhancement, so the like button and counter update without a full page reload.
+Post likes on the single-post page use a small Turbo JS enhancement, so the like button and counter update without a full page reload.
 
 ## API overview
 
@@ -63,7 +63,7 @@ Supported query params:
 Example:
 
 ```bash
-curl "http://localhost:3000/api/v1/posts?page=1&per_page=10&sort=date&direction=desc"
+curl -H "X-User-Id: 1" "http://localhost:3000/api/v1/posts?page=1&per_page=10&sort=date&direction=desc"
 ```
 
 ### Posts
@@ -82,12 +82,29 @@ curl "http://localhost:3000/api/v1/posts?page=1&per_page=10&sort=date&direction=
 - `POST /api/v1/comments/:id/like`
 - `DELETE /api/v1/comments/:id/like`
 
+## Authentication
+
+Write actions use a simplified user context for this assignment.
+
+- API requests can pass `X-User-Id: <id>`
+- the browser demo uses a selected user from the UI
+- some local browser/demo flows also pass `user_id` in the query string
+
+Example:
+
+```bash
+curl -H "X-User-Id: 1" \
+  -H "Content-Type: application/json" \
+  -d '{"post":{"date":"2026-03-31T12:00:00Z","description":"Launch timeline"}}' \
+  http://localhost:3000/api/v1/posts
+```
+
 ## Main technical choices
 
 - Likes are polymorphic, so the same `likes` table is used for both posts and comments.
 - Attachments are stored as post attachment records with a file type and URL.
 - Browser uploads are saved locally for demo purposes.
-- Authentication is intentionally simplified for this assignment.
+- Authentication is intentionally simplified for this assignment by using a lightweight user context instead of a full sign-in flow.
 - The browser demo is a thin layer on top of the JSON API to make manual review easier.
 - Turbo JS is used in a minimal way to improve the browser demo without turning it into a separate frontend app.
 
