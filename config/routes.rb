@@ -7,6 +7,7 @@ Rails.application.routes.draw do
   delete "timeline/:id", to: "timeline#destroy"
   post "timeline/:id/comments", to: "timeline#create_comment", as: :timeline_post_comments
   post "timeline/:id/like", to: "timeline#toggle_like", as: :timeline_post_like
+  post "timeline/comments/:id/like", to: "timeline#toggle_comment_like", as: :timeline_comment_like
   post "timeline/users", to: "timeline#create_user", as: :timeline_users
   post "timeline/select_user", to: "timeline#select_user", as: :timeline_select_user
 

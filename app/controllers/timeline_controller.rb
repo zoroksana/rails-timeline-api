@@ -1,7 +1,7 @@
 class TimelineController < ActionController::Base
   include Pagy::Method
 
-  helper_method :available_users, :selected_user, :liked_by_selected_user?, :like_frame_id, :selected_user_owns?
+  helper_method :available_users, :selected_user, :liked_by_selected_user?, :like_frame_id, :selected_user_owns?, :selected_user_liked?
 
   def landing
     @user = User.new
@@ -115,6 +115,20 @@ class TimelineController < ActionController::Base
     end
   end
 
+  def toggle_comment_like
+    comment = Comment.includes(:post).find(params[:id])
+    user = User.find(params[:user_id])
+    like = comment.likes.find_by(user: user)
+
+    if like
+      like.destroy!
+      redirect_to timeline_post_path(comment.post, user_id: user.id, banner: "Comment unliked.", anchor: "comment-#{comment.id}")
+    else
+      comment.likes.create!(user: user)
+      redirect_to timeline_post_path(comment.post, user_id: user.id, banner: "Comment liked.", anchor: "comment-#{comment.id}")
+    end
+  end
+
   def create_user
     user = User.new(user_params)
 
@@ -151,6 +165,12 @@ class TimelineController < ActionController::Base
     return false unless selected_user
 
     post.likes.any? { |like| like.user_id == selected_user.id }
+  end
+
+  def selected_user_liked?(likable)
+    return false unless selected_user
+
+    likable.likes.any? { |like| like.user_id == selected_user.id }
   end
 
   def selected_user_owns?(post)

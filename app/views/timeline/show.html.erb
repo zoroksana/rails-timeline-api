@@ -35,6 +35,20 @@
   <h2 class="title">Description</h2>
   <p class="body"><%= @post.description %></p>
 
+  <p class="section-label">Attachments</p>
+  <section class="attachments">
+    <% if @post.post_attachments.any? %>
+      <% @post.post_attachments.each do |attachment| %>
+        <div class="attachment">
+          <strong><%= attachment.file_type.capitalize %></strong>
+          <div class="meta"><a href="<%= attachment.url %>"><%= attachment.url %></a></div>
+        </div>
+      <% end %>
+    <% else %>
+      <div class="attachment meta">No attachments</div>
+    <% end %>
+  </section>
+
   <% if selected_user_owns?(@post) %>
     <section class="soft-panel" style="margin-top: 22px;">
       <div class="meta">Manage from browser</div>
@@ -61,20 +75,6 @@
     </section>
   <% end %>
 
-  <p class="section-label">Attachments</p>
-  <section class="attachments">
-    <% if @post.post_attachments.any? %>
-      <% @post.post_attachments.each do |attachment| %>
-        <div class="attachment">
-          <strong><%= attachment.file_type.capitalize %></strong>
-          <div class="meta"><a href="<%= attachment.url %>"><%= attachment.url %></a></div>
-        </div>
-      <% end %>
-    <% else %>
-      <div class="attachment meta">No attachments</div>
-    <% end %>
-  </section>
-
   <p class="section-label">Comments</p>
   <section class="soft-panel" style="margin-bottom: 20px;">
     <div class="meta">Add from browser</div>
@@ -95,12 +95,23 @@
   <section class="comments">
     <% if @post.comments.any? %>
       <% @post.comments.order(:created_at).each do |comment| %>
-        <div class="comment">
+        <div class="comment" id="comment-<%= comment.id %>">
           <div class="meta-row">
             <strong><%= comment.user.name %></strong>
             <span class="meta"><%= comment.likes.count %> likes</span>
           </div>
           <p class="body" style="margin-top: 10px;"><%= comment.body %></p>
+
+          <% if selected_user %>
+            <div style="margin-top: 12px;">
+              <%= button_to(
+                selected_user_liked?(comment) ? "Unlike comment" : "Like comment",
+                timeline_comment_like_path(comment, user_id: selected_user.id),
+                method: :post,
+                class: "button"
+              ) %>
+            </div>
+          <% end %>
         </div>
       <% end %>
     <% else %>
