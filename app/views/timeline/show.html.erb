@@ -83,6 +83,7 @@
       <p class="meta">Commenting as <strong><%= selected_user.name %></strong>.</p>
     <% end %>
     <%= form_with model: @comment, url: timeline_post_comments_path(@post), class: "form-stack" do |form| %>
+      <%= hidden_field_tag :user_id, selected_user&.id %>
       <div class="field">
         <%= form.label :body %>
         <%= form.text_area :body, placeholder: "Write a comment..." %>
