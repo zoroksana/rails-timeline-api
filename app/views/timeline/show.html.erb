@@ -35,6 +35,32 @@
   <h2 class="title">Description</h2>
   <p class="body"><%= @post.description %></p>
 
+  <% if selected_user_owns?(@post) %>
+    <section class="soft-panel" style="margin-top: 22px;">
+      <div class="meta">Manage from browser</div>
+      <h3 class="title" style="font-size: 1.2rem;">Edit or delete this post</h3>
+      <p class="meta">You are viewing this post as its author, so you can update the description or remove the post.</p>
+
+      <%= form_with model: @post, url: timeline_post_path(@post, user_id: selected_user.id), method: :patch, class: "form-stack" do |form| %>
+        <div class="field">
+          <%= form.label :description, "Update description" %>
+          <%= form.text_area :description, value: @post.description, placeholder: "Update the post..." %>
+        </div>
+
+        <div class="field">
+          <%= form.label :attachment_file, "Add another file from your computer" %>
+          <%= form.file_field :attachment_file, accept: "image/*,video/*,.pdf,application/pdf" %>
+        </div>
+
+        <%= form.submit "Update post", class: "button" %>
+      <% end %>
+
+      <div style="margin-top: 14px;">
+        <%= button_to "Delete post", timeline_post_path(@post, user_id: selected_user.id), method: :delete, class: "button" %>
+      </div>
+    </section>
+  <% end %>
+
   <p class="section-label">Attachments</p>
   <section class="attachments">
     <% if @post.post_attachments.any? %>

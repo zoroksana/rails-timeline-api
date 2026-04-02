@@ -1,5 +1,7 @@
 class TimelineController < ActionController::Base
-  helper_method :available_users, :selected_user, :liked_by_selected_user?, :like_frame_id
+  include Pagy::Method
+
+  helper_method :available_users, :selected_user, :liked_by_selected_user?, :like_frame_id, :selected_user_owns?
 
   def landing
     @user = User.new
@@ -11,7 +13,8 @@ class TimelineController < ActionController::Base
     @post = Post.new
     @post.user_id = params[:user_id] if params[:user_id].present?
     @banner = params[:banner]
-    @posts = Post.includes(:user, :post_attachments, :comments, :likes).timeline_order("date", "desc").limit(20)
+    posts = Post.includes(:user, :post_attachments, :comments, :likes).timeline_order("date", "desc")
+    @pagy, @posts = pagy(:offset, posts, limit: 8)
   end
 
   def show
@@ -42,7 +45,8 @@ class TimelineController < ActionController::Base
       @post = post
       @post.user_id = user.id
       @banner = post.errors.full_messages.to_sentence
-      @posts = Post.includes(:user, :post_attachments, :comments, :likes).timeline_order("date", "desc").limit(20)
+      posts = Post.includes(:user, :post_attachments, :comments, :likes).timeline_order("date", "desc")
+      @pagy, @posts = pagy(:offset, posts, limit: 8)
       render :index, status: :unprocessable_entity
     end
   end
@@ -60,6 +64,37 @@ class TimelineController < ActionController::Base
       @banner = comment.errors.full_messages.to_sentence
       render :show, status: :unprocessable_entity
     end
+  end
+
+  def update
+    @post = Post.includes(:user, :post_attachments, comments: [ :user, :likes ]).find(params[:id])
+    user = current_selected_user!
+    return redirect_to timeline_post_path(@post, user_id: user.id, banner: "Only the post author can edit this post.") unless selected_user_owns?(@post)
+
+    @post.description = timeline_post_params[:description]
+    attachment_file = timeline_post_params[:attachment_file]
+
+    if attachment_file.present?
+      stored_attachment = store_uploaded_attachment(attachment_file)
+      @post.post_attachments.build(url: stored_attachment[:url], file_type: stored_attachment[:file_type])
+    end
+
+    if @post.save
+      redirect_to timeline_post_path(@post, user_id: user.id, banner: "Post updated.")
+    else
+      @comment = Comment.new
+      @banner = @post.errors.full_messages.to_sentence
+      render :show, status: :unprocessable_entity
+    end
+  end
+
+  def destroy
+    post = Post.find(params[:id])
+    user = current_selected_user!
+    return redirect_to timeline_post_path(post, user_id: user.id, banner: "Only the post author can delete this post.") unless selected_user_owns?(post)
+
+    post.destroy!
+    redirect_to timeline_path(user_id: user.id, banner: "Post deleted.")
   end
 
   def toggle_like
@@ -116,6 +151,10 @@ class TimelineController < ActionController::Base
     return false unless selected_user
 
     post.likes.any? { |like| like.user_id == selected_user.id }
+  end
+
+  def selected_user_owns?(post)
+    selected_user && post.user_id == selected_user.id
   end
 
   def like_frame_id(post)

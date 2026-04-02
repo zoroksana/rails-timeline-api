@@ -3,6 +3,8 @@ Rails.application.routes.draw do
   get "timeline", to: "timeline#index"
   get "timeline/:id", to: "timeline#show", as: :timeline_post
   post "timeline", to: "timeline#create"
+  patch "timeline/:id", to: "timeline#update"
+  delete "timeline/:id", to: "timeline#destroy"
   post "timeline/:id/comments", to: "timeline#create_comment", as: :timeline_post_comments
   post "timeline/:id/like", to: "timeline#toggle_like", as: :timeline_post_like
   post "timeline/users", to: "timeline#create_user", as: :timeline_users

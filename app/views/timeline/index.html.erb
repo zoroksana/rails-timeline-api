@@ -60,7 +60,7 @@
           <p class="body"><%= post.description %></p>
 
           <div class="stats">
-            <%= render "post_like", post: post %>
+            <span class="stat"><%= post.likes.count %> likes</span>
             <span class="stat"><%= post.comments.count %> comments</span>
             <span class="stat"><%= post.post_attachments.count %> attachments</span>
           </div>
@@ -81,6 +81,23 @@
       <div class="card empty">
         No posts yet. Create one from the form on the left.
       </div>
+    <% end %>
+
+    <% if defined?(@pagy) && @pagy.pages > 1 %>
+      <nav class="card" aria-label="Timeline pagination">
+        <div class="card-top">
+          <div class="meta">Page <%= @pagy.page %> of <%= @pagy.pages %></div>
+          <div class="hero-links" style="margin-top: 0;">
+            <% if @pagy.previous %>
+              <a class="chip" href="<%= timeline_path(user_id: selected_user&.id, page: @pagy.previous) %>">Previous</a>
+            <% end %>
+
+            <% if @pagy.next %>
+              <a class="chip" href="<%= timeline_path(user_id: selected_user&.id, page: @pagy.next) %>">Next</a>
+            <% end %>
+          </div>
+        </div>
+      </nav>
     <% end %>
   </section>
 </section>
