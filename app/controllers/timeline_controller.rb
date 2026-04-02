@@ -1,5 +1,5 @@
 class TimelineController < ActionController::Base
-  helper_method :available_users, :selected_user, :liked_by_selected_user?
+  helper_method :available_users, :selected_user, :liked_by_selected_user?, :like_frame_id
 
   def landing
     @user = User.new
@@ -69,9 +69,13 @@ class TimelineController < ActionController::Base
 
     if like
       like.destroy!
+      return render_like_frame(post) if turbo_frame_request?
+
       redirect_to timeline_post_path(post, user_id: user.id, banner: "Post unliked.")
     else
       post.likes.create!(user: user)
+      return render_like_frame(post) if turbo_frame_request?
+
       redirect_to timeline_post_path(post, user_id: user.id, banner: "Post liked.")
     end
   end
@@ -114,6 +118,10 @@ class TimelineController < ActionController::Base
     post.likes.any? { |like| like.user_id == selected_user.id }
   end
 
+  def like_frame_id(post)
+    "post_#{post.id}_like"
+  end
+
   def timeline_post_params
     params.require(:post).permit(:description, :attachment_file)
   end
@@ -151,6 +159,14 @@ class TimelineController < ActionController::Base
 
   def current_selected_user!
     selected_user || raise(ActiveRecord::RecordNotFound, "Please select a user first")
+  end
+
+  def turbo_frame_request?
+    request.headers["Turbo-Frame"].present?
+  end
+
+  def render_like_frame(post)
+    render partial: "timeline/post_like", locals: { post: post }
   end
 
   def append_query_param(url, key, value)

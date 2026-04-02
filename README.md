@@ -11,6 +11,7 @@ Ruby on Rails timeline API where users can create posts, comment on posts, and l
 - Request and model specs with RSpec
 - Local development with `docker compose`
 - Simple browser demo for creating users, posts, comments, and likes
+- Small Turbo JS enhancement for post likes in the browser demo
 - Local Puma metrics endpoint
 
 ## Running locally
@@ -43,6 +44,8 @@ docker compose run --rm test bundle exec rspec
 - `/timeline/:id` shows a single post and lets you add comments
 
 The browser flow uses a selected user from the UI so manual testing is easy without setting request headers by hand.
+
+Post likes in the browser demo use a small Turbo JS enhancement, so the like button and counter update without a full page reload.
 
 ## API overview
 
@@ -86,6 +89,7 @@ curl "http://localhost:3000/api/v1/posts?page=1&per_page=10&sort=date&direction=
 - Browser uploads are saved locally for demo purposes.
 - Authentication is intentionally simplified for this assignment.
 - The browser demo is a thin layer on top of the JSON API to make manual review easier.
+- Turbo JS is used in a minimal way to improve the browser demo without turning it into a separate frontend app.
 
 ## Puma metrics
 

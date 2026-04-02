@@ -16,7 +16,7 @@
       <%= form.hidden_field :redirect_to, value: timeline_post_path(@post) %>
       <div class="field" style="min-width: 260px;">
         <%= form.label :user_id, "Current user" %>
-        <%= form.select :user_id, available_users.map { |user| ["#{user.name} (##{user.id})", user.id] }, selected: selected_user&.id %>
+        <%= form.select :user_id, available_users.map { |user| [ "#{user.name} (##{user.id})", user.id ] }, { selected: selected_user&.id } %>
       </div>
       <%= form.submit "Use this user", class: "button" %>
     <% end %>
@@ -27,21 +27,10 @@
   <div class="meta-row">
     <div class="meta">Updated <%= @post.updated_at.strftime("%d %b %Y %H:%M") %></div>
     <div class="stats">
-      <span class="stat"><%= @post.likes.count %> likes</span>
+      <%= render "post_like", post: @post %>
       <span class="stat"><%= @post.comments.count %> comments</span>
     </div>
   </div>
-
-  <% if selected_user %>
-    <div style="margin-top: 18px;">
-      <%= button_to(
-        liked_by_selected_user?(@post) ? "Unlike" : "Like",
-        timeline_post_like_path(@post, user_id: selected_user.id),
-        method: :post,
-        class: "button"
-      ) %>
-    </div>
-  <% end %>
 
   <h2 class="title">Description</h2>
   <p class="body"><%= @post.description %></p>

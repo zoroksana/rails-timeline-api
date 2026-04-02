@@ -3,6 +3,10 @@
   <head>
     <title>Timeline API</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
+    <script
+      src="https://cdn.jsdelivr.net/npm/@hotwired/turbo@8.0.18/dist/turbo.es2017-umd.js"
+      defer
+    ></script>
     <style>
       :root {
         --bg: #f3ede4;
@@ -293,6 +297,17 @@
 
       .button_to .button {
         width: auto;
+      }
+
+      .like-box {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      turbo-frame {
+        display: inline-flex;
       }
 
       .soft-panel {
