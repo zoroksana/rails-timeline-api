@@ -1,7 +1,7 @@
 class TimelineController < ActionController::Base
   include Pagy::Method
 
-  helper_method :available_users, :selected_user, :liked_by_selected_user?, :like_frame_id, :selected_user_owns?, :selected_user_liked?
+  helper_method :available_users, :selected_user, :liked_by_selected_user?, :like_frame_id, :selected_user_owns?, :selected_user_liked?, :current_sort_option
 
   def landing
     @user = User.new
@@ -13,7 +13,7 @@ class TimelineController < ActionController::Base
     @post = Post.new
     @post.user_id = params[:user_id] if params[:user_id].present?
     @banner = params[:banner]
-    posts = Post.includes(:user, :post_attachments, :comments, :likes).timeline_order("date", "desc")
+    posts = ordered_posts_scope
     @pagy, @posts = pagy(:offset, posts, limit: 8)
   end
 
@@ -45,7 +45,7 @@ class TimelineController < ActionController::Base
       @post = post
       @post.user_id = user.id
       @banner = post.errors.full_messages.to_sentence
-      posts = Post.includes(:user, :post_attachments, :comments, :likes).timeline_order("date", "desc")
+      posts = ordered_posts_scope
       @pagy, @posts = pagy(:offset, posts, limit: 8)
       render :index, status: :unprocessable_entity
     end
@@ -173,8 +173,18 @@ class TimelineController < ActionController::Base
     likable.likes.any? { |like| like.user_id == selected_user.id }
   end
 
+  def current_sort_option
+    %w[newest oldest].include?(params[:sort]) ? params[:sort] : "newest"
+  end
+
   def selected_user_owns?(post)
     selected_user && post.user_id == selected_user.id
+  end
+
+  def ordered_posts_scope
+    scope = Post.includes(:user, :post_attachments, :comments, :likes)
+
+    current_sort_option == "oldest" ? scope.timeline_order("date", "asc") : scope.timeline_order("date", "desc")
   end
 
   def like_frame_id(post)

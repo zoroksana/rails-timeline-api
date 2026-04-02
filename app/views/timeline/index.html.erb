@@ -20,6 +20,15 @@
       <%= form.submit "Use this user", class: "button" %>
     <% end %>
   <% end %>
+
+  <%= form_with url: timeline_path, method: :get, class: "toolbar", local: true do |form| %>
+    <%= form.hidden_field :user_id, value: selected_user&.id %>
+    <div class="field" style="min-width: 220px;">
+      <%= form.label :sort, "Sort by" %>
+      <%= form.select :sort, [ [ "Newest first", "newest" ], [ "Oldest first", "oldest" ] ], { selected: current_sort_option } %>
+    </div>
+    <%= form.submit "Sort posts", class: "button" %>
+  <% end %>
 </section>
 
 <section class="split">
@@ -89,11 +98,11 @@
           <div class="meta">Page <%= @pagy.page %> of <%= @pagy.pages %></div>
           <div class="hero-links" style="margin-top: 0;">
             <% if @pagy.previous %>
-              <a class="chip" href="<%= timeline_path(user_id: selected_user&.id, page: @pagy.previous) %>">Previous</a>
+              <a class="chip" href="<%= timeline_path(user_id: selected_user&.id, page: @pagy.previous, sort: current_sort_option) %>">Previous</a>
             <% end %>
 
             <% if @pagy.next %>
-              <a class="chip" href="<%= timeline_path(user_id: selected_user&.id, page: @pagy.next) %>">Next</a>
+              <a class="chip" href="<%= timeline_path(user_id: selected_user&.id, page: @pagy.next, sort: current_sort_option) %>">Next</a>
             <% end %>
           </div>
         </div>
