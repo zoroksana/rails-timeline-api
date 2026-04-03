@@ -18,6 +18,6 @@ module CurrentUser
   def require_current_user
     return if current_user.present?
 
-    render json: { error: "X-User-Id header is required and must reference an existing user" }, status: :unauthorized
+    render json: { error: "A valid user context is required and must reference an existing user" }, status: :unauthorized
   end
 end
