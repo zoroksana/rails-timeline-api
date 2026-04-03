@@ -133,6 +133,12 @@
         pointer-events: none;
       }
 
+      .chip-viewer {
+        background: rgba(180, 81, 45, 0.12);
+        border-color: rgba(180, 81, 45, 0.18);
+        color: var(--accent-deep);
+      }
+
       .grid {
         display: grid;
         gap: 20px;
@@ -209,6 +215,29 @@
         border: 1px solid var(--line);
         border-radius: 18px;
         background: rgba(255, 255, 255, 0.76);
+      }
+
+      .attachment-preview {
+        display: block;
+        width: 100%;
+        max-height: 220px;
+        margin-top: 12px;
+        object-fit: cover;
+        border-radius: 14px;
+        border: 1px solid rgba(31, 29, 26, 0.08);
+        box-shadow: var(--shadow-soft);
+        background: rgba(255, 255, 255, 0.9);
+      }
+
+      .author-controls {
+        margin-top: 22px;
+        border-color: rgba(180, 81, 45, 0.18);
+        background:
+          linear-gradient(180deg, rgba(255, 250, 245, 0.98), rgba(247, 238, 229, 0.92));
+      }
+
+      .author-controls .title {
+        margin-top: 8px;
       }
 
       .section-label {

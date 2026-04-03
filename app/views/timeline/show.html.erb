@@ -21,6 +21,12 @@
       <%= form.submit "Use this user", class: "button" %>
     <% end %>
   <% end %>
+
+  <% if selected_user %>
+    <div class="hero-links" style="margin-top: 16px;">
+      <span class="chip chip-viewer">You are viewing as <strong style="margin-left: 6px;"><%= selected_user.name %></strong></span>
+    </div>
+  <% end %>
 </section>
 
 <article class="card" style="margin-top: 24px;">
@@ -42,6 +48,9 @@
         <div class="attachment">
           <strong><%= attachment.file_type.capitalize %></strong>
           <div class="meta"><a href="<%= attachment.url %>"><%= attachment.url %></a></div>
+          <% if attachment.file_type == "photo" %>
+            <img class="attachment-preview" src="<%= attachment.url %>" alt="Attachment preview for post <%= @post.id %>">
+          <% end %>
         </div>
       <% end %>
     <% else %>
@@ -50,7 +59,7 @@
   </section>
 
   <% if selected_user_owns?(@post) %>
-    <section class="soft-panel" style="margin-top: 22px;">
+    <section class="soft-panel author-controls">
       <div class="meta">Manage from browser</div>
       <h3 class="title" style="font-size: 1.2rem;">Edit or delete this post</h3>
       <p class="meta">You are viewing this post as its author, so you can update the description or remove the post.</p>

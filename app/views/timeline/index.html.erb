@@ -21,6 +21,12 @@
     <% end %>
   <% end %>
 
+  <% if selected_user %>
+    <div class="hero-links" style="margin-top: 16px;">
+      <span class="chip chip-viewer">You are viewing as <strong style="margin-left: 6px;"><%= selected_user.name %></strong></span>
+    </div>
+  <% end %>
+
   <%= form_with url: timeline_path, method: :get, class: "toolbar", local: true do |form| %>
     <%= form.hidden_field :user_id, value: selected_user&.id %>
     <div class="field" style="min-width: 220px;">
@@ -81,6 +87,9 @@
                 <div class="attachment">
                   <strong><%= attachment.file_type.capitalize %></strong>
                   <div class="meta"><a href="<%= attachment.url %>"><%= attachment.url %></a></div>
+                  <% if attachment.file_type == "photo" %>
+                    <img class="attachment-preview" src="<%= attachment.url %>" alt="Attachment preview for post <%= post.id %>">
+                  <% end %>
                 </div>
               <% end %>
             </section>
