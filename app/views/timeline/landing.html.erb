@@ -50,6 +50,35 @@
       <% else %>
         <div class="empty">No users yet. Create the first one from the form.</div>
       <% end %>
+
+      <% if defined?(@users_pagy) && @users_pagy.pages > 1 %>
+        <nav style="margin-top: 18px;" aria-label="Authors pagination">
+          <div class="card-top">
+            <div class="meta">Page <%= @users_pagy.page %> of <%= @users_pagy.pages %></div>
+            <div class="pagination-nav">
+              <% if @users_pagy.previous %>
+                <a class="chip" href="<%= root_path(users_page: @users_pagy.previous) %>">Previous</a>
+              <% else %>
+                <span class="chip chip-muted">Previous</span>
+              <% end %>
+
+              <% pagination_window(@users_pagy).each do |page_number| %>
+                <% if page_number == @users_pagy.page %>
+                  <span class="chip chip-active"><%= page_number %></span>
+                <% else %>
+                  <a class="chip" href="<%= root_path(users_page: page_number) %>"><%= page_number %></a>
+                <% end %>
+              <% end %>
+
+              <% if @users_pagy.next %>
+                <a class="chip" href="<%= root_path(users_page: @users_pagy.next) %>">Next</a>
+              <% else %>
+                <span class="chip chip-muted">Next</span>
+              <% end %>
+            </div>
+          </div>
+        </nav>
+      <% end %>
     </article>
   </section>
 </section>

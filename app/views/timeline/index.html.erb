@@ -97,13 +97,25 @@
       <nav class="card" aria-label="Timeline pagination">
         <div class="card-top">
           <div class="meta">Page <%= @pagy.page %> of <%= @pagy.pages %></div>
-          <div class="hero-links" style="margin-top: 0;">
+          <div class="pagination-nav">
             <% if @pagy.previous %>
               <a class="chip" href="<%= timeline_path(user_id: selected_user&.id, page: @pagy.previous, sort: current_sort_option) %>">Previous</a>
+            <% else %>
+              <span class="chip chip-muted">Previous</span>
+            <% end %>
+
+            <% pagination_window(@pagy).each do |page_number| %>
+              <% if page_number == @pagy.page %>
+                <span class="chip chip-active"><%= page_number %></span>
+              <% else %>
+                <a class="chip" href="<%= timeline_path(user_id: selected_user&.id, page: page_number, sort: current_sort_option) %>"><%= page_number %></a>
+              <% end %>
             <% end %>
 
             <% if @pagy.next %>
               <a class="chip" href="<%= timeline_path(user_id: selected_user&.id, page: @pagy.next, sort: current_sort_option) %>">Next</a>
+            <% else %>
+              <span class="chip chip-muted">Next</span>
             <% end %>
           </div>
         </div>

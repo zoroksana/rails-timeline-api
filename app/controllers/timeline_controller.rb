@@ -1,12 +1,13 @@
 class TimelineController < ActionController::Base
   include Pagy::Method
 
-  helper_method :available_users, :selected_user, :liked_by_selected_user?, :like_frame_id, :selected_user_owns?, :selected_user_liked?, :current_sort_option
+  helper_method :available_users, :selected_user, :liked_by_selected_user?, :like_frame_id, :selected_user_owns?, :selected_user_liked?, :current_sort_option, :pagination_window
 
   def landing
     @user = User.new
     @banner = params[:banner]
-    @users = User.order(:name)
+    users = User.order(:name)
+    @users_pagy, @users = pagy(:offset, users, limit: 8, page_key: :users_page)
   end
 
   def index
@@ -135,7 +136,8 @@ class TimelineController < ActionController::Base
     if user.save
       redirect_to timeline_path(user_id: user.id, banner: "User created.")
     else
-      @users = User.order(:name)
+      users = User.order(:name)
+      @users_pagy, @users = pagy(:offset, users, limit: 8, page_key: :users_page)
       @user = user
       @banner = user.errors.full_messages.to_sentence
       render :landing, status: :unprocessable_entity
@@ -185,6 +187,12 @@ class TimelineController < ActionController::Base
     scope = Post.includes(:user, :post_attachments, :comments, :likes)
 
     current_sort_option == "oldest" ? scope.timeline_order("date", "asc") : scope.timeline_order("date", "desc")
+  end
+
+  def pagination_window(pagy, radius: 2)
+    start_page = [ pagy.page - radius, 1 ].max
+    end_page = [ pagy.page + radius, pagy.pages ].min
+    (start_page..end_page).to_a
   end
 
   def like_frame_id(post)
