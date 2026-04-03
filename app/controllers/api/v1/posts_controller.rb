@@ -3,7 +3,7 @@ class Api::V1::PostsController < ApplicationController
   before_action :authorize_post_owner!, only: [ :update, :destroy ]
 
   def index
-    posts = Post.includes(:user, :post_attachments).timeline_order(params[:sort], params[:direction])
+    posts = Post.includes(:user, :post_attachments, :likes, :comments).timeline_order(params[:sort], params[:direction])
     pagy, records = pagy(:offset, posts, limit: per_page)
 
     render json: {
@@ -37,19 +37,19 @@ class Api::V1::PostsController < ApplicationController
   end
 
   def like
-    post.likes.find_or_create_by!(user: current_user)
+    ensure_like(post)
     render json: { data: serialize_post(post.reload) }, status: :created
   end
 
   def unlike
-    post.likes.find_by!(user: current_user).destroy!
+    post.likes.destroy_by(user: current_user)
     head :no_content
   end
 
   private
 
   def post
-    @post ||= Post.includes(comments: :user).find(params[:id])
+    @post ||= Post.includes(:user, :post_attachments, :likes, comments: [ :user, :likes ]).find(params[:id])
   end
 
   def per_page
@@ -72,8 +72,8 @@ class Api::V1::PostsController < ApplicationController
       description: record.description,
       author: serialize_user(record.user),
       attachments: record.post_attachments.map { |attachment| serialize_attachment(attachment) },
-      likes_count: record.likes.count,
-      comments_count: record.comments.count,
+      likes_count: record.likes.size,
+      comments_count: record.comments.size,
       created_at: record.created_at.iso8601,
       updated_at: record.updated_at.iso8601
     }
@@ -90,7 +90,7 @@ class Api::V1::PostsController < ApplicationController
       id: record.id,
       body: record.body,
       author: serialize_user(record.user),
-      likes_count: record.likes.count,
+      likes_count: record.likes.size,
       created_at: record.created_at.iso8601,
       updated_at: record.updated_at.iso8601
     }
@@ -107,8 +107,7 @@ class Api::V1::PostsController < ApplicationController
   def serialize_user(record)
     {
       id: record.id,
-      name: record.name,
-      email: record.email
+      name: record.name
     }
   end
 
@@ -116,5 +115,16 @@ class Api::V1::PostsController < ApplicationController
     return if post.user_id == current_user.id
 
     render json: { error: "Only the post author can modify this post" }, status: :forbidden
+  end
+
+  def ensure_like(likable)
+    existing_like = likable.likes.find_by(user: current_user)
+    return existing_like if existing_like
+
+    like = likable.likes.new(user: current_user)
+    like.save!(validate: false)
+    like
+  rescue ActiveRecord::RecordNotUnique
+    likable.likes.find_by!(user: current_user)
   end
 end

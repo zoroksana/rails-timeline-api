@@ -89,6 +89,7 @@ Write actions use a simplified user context for this assignment.
 - API requests can pass `X-User-Id: <id>`
 - the browser demo uses a selected user from the UI
 - some local browser/demo flows also pass `user_id` in the query string
+- public read endpoints expose user names, but not email addresses
 
 Example:
 

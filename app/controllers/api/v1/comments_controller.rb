@@ -1,7 +1,8 @@
 class Api::V1::CommentsController < ApplicationController
   skip_before_action :require_current_user, only: [ :index ]
+
   def index
-    render json: { data: post.comments.includes(:user).order(:created_at).map { |comment| serialize_comment(comment) } }
+    render json: { data: post.comments.includes(:user, :likes).order(:created_at).map { |comment| serialize_comment(comment) } }
   end
 
   def create
@@ -10,12 +11,12 @@ class Api::V1::CommentsController < ApplicationController
   end
 
   def like
-    comment.likes.find_or_create_by!(user: current_user)
+    ensure_like(comment)
     render json: { data: serialize_comment(comment.reload) }, status: :created
   end
 
   def unlike
-    comment.likes.find_by!(user: current_user).destroy!
+    comment.likes.destroy_by(user: current_user)
     head :no_content
   end
 
@@ -26,7 +27,7 @@ class Api::V1::CommentsController < ApplicationController
   end
 
   def comment
-    @comment ||= Comment.includes(:user).find(params[:id])
+    @comment ||= Comment.includes(:user, :likes).find(params[:id])
   end
 
   def comment_params
@@ -39,12 +40,22 @@ class Api::V1::CommentsController < ApplicationController
       body: record.body,
       author: {
         id: record.user.id,
-        name: record.user.name,
-        email: record.user.email
+        name: record.user.name
       },
-      likes_count: record.likes.count,
+      likes_count: record.likes.size,
       created_at: record.created_at.iso8601,
       updated_at: record.updated_at.iso8601
     }
+  end
+
+  def ensure_like(likable)
+    existing_like = likable.likes.find_by(user: current_user)
+    return existing_like if existing_like
+
+    like = likable.likes.new(user: current_user)
+    like.save!(validate: false)
+    like
+  rescue ActiveRecord::RecordNotUnique
+    likable.likes.find_by!(user: current_user)
   end
 end

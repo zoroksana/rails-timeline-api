@@ -19,7 +19,7 @@ services:
     build:
       context: .
       target: development
-    command: sh -c "rm -f tmp/pids/server.pid && bundle check || bundle install && bundle exec rails server -p 3000 -b 0.0.0.0"
+    command: sh -c "rm -f tmp/pids/server.pid && (bundle check || bundle install) && bundle exec rails db:prepare && bundle exec rails server -p 3000 -b 0.0.0.0"
     volumes:
       - .:/rails
       - bundle_cache:/usr/local/bundle
@@ -41,7 +41,7 @@ services:
     build:
       context: .
       target: development
-    command: sh -c "bundle check || bundle install && bundle exec rspec"
+    command: sh -c "(bundle check || bundle install) && bundle exec rails db:prepare && bundle exec rspec"
     volumes:
       - .:/rails
       - bundle_cache:/usr/local/bundle
