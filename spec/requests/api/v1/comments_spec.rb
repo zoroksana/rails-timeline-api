@@ -44,6 +44,18 @@ RSpec.describe "Api::V1::Comments", type: :request do
       expect(response).to have_http_status(:created)
       expect(comment.likes.count).to eq(1)
     end
+
+    it "likes a comment only once per user" do
+      comment = create(:comment, post: post_record)
+
+      expect do
+        post like_api_v1_comment_path(comment), headers: headers
+        post like_api_v1_comment_path(comment), headers: headers
+      end.to change(Like, :count).by(1)
+
+      expect(response).to have_http_status(:created)
+      expect(comment.likes.count).to eq(1)
+    end
   end
 
   describe "DELETE /api/v1/comments/:id/like" do

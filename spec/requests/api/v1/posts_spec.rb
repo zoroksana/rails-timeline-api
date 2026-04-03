@@ -30,6 +30,17 @@ RSpec.describe "Api::V1::Posts", type: :request do
       expect(payload.dig("data", 0, "description")).to eq("oldest")
       expect(payload.dig("data", 2, "description")).to eq("newest")
     end
+
+    it "supports sorting by created_at ascending" do
+      get api_v1_posts_path, params: { sort: "created_at", direction: "asc" }, headers: headers
+
+      expect(response).to have_http_status(:ok)
+      payload = JSON.parse(response.body)
+
+      expect(payload.dig("data", 0, "description")).to eq("oldest")
+      expect(payload.dig("data", 1, "description")).to eq("middle")
+      expect(payload.dig("data", 2, "description")).to eq("newest")
+    end
   end
 
   describe "GET /api/v1/posts/:id" do
